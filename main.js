@@ -67,30 +67,52 @@
      with: <video autoplay muted loop playsinline><source src="your-video.mp4" type="video/mp4"></video>
   ---------------------------------------------------------------- */
   function playHeroIntro() {
-    if (!hasGSAP) return;
+    const eyebrow = document.querySelector(".hero__eyebrow");
     const lines = document.querySelectorAll(".hero__line");
-    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+    const sub = document.querySelector(".hero__sub");
+    const ctas = document.querySelector(".hero__ctas");
+    const seal = document.querySelector(".rating-seal");
+    const scroll = document.querySelector(".hero__scroll");
 
-    tl.from(".hero__eyebrow", { y: 16, opacity: 0, duration: 0.7 })
-      .from(
-        lines,
-        { yPercent: 110, opacity: 0, duration: 0.9, stagger: 0.12 },
+    // Fallback: ensure all elements are visible after 2 seconds
+    const fallback = setTimeout(() => {
+      const all = [eyebrow, sub, ctas, seal, scroll];
+      lines.forEach(l => all.push(l));
+      all.forEach(el => { if (el) el.style.opacity = "1"; });
+    }, 2000);
+
+    if (!hasGSAP) {
+      clearTimeout(fallback);
+      return;
+    }
+
+    const tl = gsap.timeline({
+      defaults: { ease: "power3.out" },
+      onComplete: () => clearTimeout(fallback)
+    });
+
+    tl.fromTo(".hero__eyebrow", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7 })
+      .fromTo(
+        ".hero__line",
+        { yPercent: 100, opacity: 0 },
+        { yPercent: 0, opacity: 1, duration: 0.9, stagger: 0.12 },
         "-=0.3",
       )
-      .from(".hero__sub", { y: 16, opacity: 0, duration: 0.7 }, "-=0.4")
-      .from(".hero__ctas", { y: 16, opacity: 0, duration: 0.7 }, "-=0.5")
-      .from(
+      .fromTo(".hero__sub", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7 }, "-=0.4")
+      .fromTo(".hero__ctas", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7 }, "-=0.5")
+      .fromTo(
         ".rating-seal",
+        { scale: 0.6, opacity: 0, rotate: -30 },
         {
-          scale: 0.6,
-          opacity: 0,
-          rotate: -30,
+          scale: 1,
+          opacity: 1,
+          rotate: -8,
           duration: 0.8,
           ease: "back.out(1.7)",
         },
         "-=0.5",
       )
-      .from(".hero__scroll", { opacity: 0, duration: 0.6 }, "-=0.3");
+      .fromTo(".hero__scroll", { opacity: 0 }, { opacity: 1, duration: 0.6 }, "-=0.3");
   }
 
   function initHeroBackdrop() {
@@ -327,7 +349,7 @@
     if (!tabs.length) return;
 
     const moveIndicator = (tab) => {
-      if (!indicator) return;
+      if (!indicator || !tab) return;
       indicator.style.width = tab.offsetWidth + "px";
       indicator.style.left = tab.offsetLeft + "px";
     };
